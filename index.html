@@ -8,39 +8,58 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: url('"C:\Temp\FFL .jpg"') no-repeat center center fixed; /* Update with correct image path */
+      background: url('path-to-your-image.png') no-repeat center center fixed; /* Update with correct image path */
       background-size: cover;
       color: white;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100vh;
     }
     .container {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      flex-direction: row;
       justify-content: space-around;
-      height: 100vh;
+      align-items: center;
+      width: 100%;
+      padding: 10px;
     }
     .box {
       background-color: rgba(0, 0, 0, 0.8);
       border: 2px solid #00ffcc;
       padding: 20px;
       margin: 10px;
-      width: 80%;
+      flex: 1;
       color: white;
+      font-size: 1.5em;
     }
     .timer {
       font-size: 4em;
     }
-    .next-pick, .current-pick, .player-list {
+    .next-pick {
       font-size: 2.5em;
     }
+    .player-list {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+    .player-column {
+      margin: 10px;
+    }
     .buttons {
+      display: flex;
+      justify-content: center;
       margin: 20px;
     }
     .buttons button {
       background-color: #00ffcc;
       color: black;
       border: none;
-      font-size: 2em;
+      font-size: 1.5em;
       margin: 10px;
       padding: 10px 20px;
       cursor: pointer;
@@ -52,16 +71,17 @@
 </head>
 <body>
   <div class="container">
-    <div class="box next-pick">Next Pick: Round <span id="nextPickRound">#</span></div>
     <div class="box timer" id="timer">150</div>
+    <div class="box next-pick" id="nextPick">Next Pick: Round <span id="nextPickRound">#</span></div>
     <div class="box current-pick" id="currentPick">Current Team Pick</div>
-    <div class="box player-list" id="availablePlayers">List players available</div>
-    <div class="buttons">
-      <button onclick="startTimer()">Start</button>
-      <button onclick="pauseTimer()">Pause</button>
-      <button onclick="endTimer()">End</button>
-    </div>
-    <div class="box previous-pick">Previous Player Picked: <span id="previousPick">None</span></div>
+  </div>
+  <div class="container player-list" id="availablePlayers">
+    <!-- Player columns will be populated here -->
+  </div>
+  <div class="buttons">
+    <button onclick="startTimer()">Start</button>
+    <button onclick="pauseTimer()">Pause</button>
+    <button onclick="endTimer()">End</button>
   </div>
   <script>
     let timerInterval;
@@ -119,15 +139,26 @@
     ];
 
     const availablePlayersElement = document.getElementById('availablePlayers');
-    players.forEach((row, rowIndex) => {
-      const rowDiv = document.createElement('div');
-      row.forEach((player, colIndex) => {
-        const playerDiv = document.createElement('div');
-        playerDiv.textContent = `${player} (${players[0][colIndex]})`;
-        rowDiv.appendChild(playerDiv);
+    const columns = ["QB", "RB", "WR", "TE"];
+    columns.forEach((col, colIndex) => {
+      const columnDiv = document.createElement('div');
+      columnDiv.classList.add('player-column');
+      const colHeader = document.createElement('div');
+      colHeader.textContent = col;
+      columnDiv.appendChild(colHeader);
+      players.forEach((row, rowIndex) => {
+        if (rowIndex > 0 && row[colIndex]) {
+          const playerDiv = document.createElement('div');
+          playerDiv.textContent = row[colIndex];
+          columnDiv.appendChild(playerDiv);
+        }
       });
-      availablePlayersElement.appendChild(rowDiv);
+      availablePlayersElement.appendChild(columnDiv);
     });
+
+    // Update information from the Google Sheet (simulated here)
+    document.getElementById('nextPickRound').textContent = "1"; // Example round number
+    document.getElementById('currentPick').textContent = "Team A"; // Example current team
   </script>
 </body>
 </html>
