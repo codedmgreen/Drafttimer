@@ -21,24 +21,26 @@
       align-items: center;
       justify-content: space-around;
       height: 100vh;
+      padding: 10px;
     }
     .box {
-      border: 2px solid red;
-      padding: 20px;
+      border: 2px solid white;
+      padding: 10px;
       margin: 10px;
       width: 80%;
+      background: rgba(0, 0, 0, 0.6);
     }
     .timer {
-      font-size: 4em;
+      font-size: 3em;
     }
     .next-pick, .current-pick, .player-list {
-      font-size: 2.5em;
+      font-size: 2em;
     }
     .buttons {
       margin: 20px;
     }
     .buttons button {
-      font-size: 2em;
+      font-size: 1.5em;
       margin: 10px;
       padding: 10px 20px;
     }
@@ -49,7 +51,7 @@
     <div class="box next-pick">Next Pick: Round <span id="nextPickRound">#</span></div>
     <div class="box timer" id="timer">150</div>
     <div class="box current-pick" id="currentPick">Current Team Pick</div>
-    <div class="box player-list" id="availablePlayers">List players available</div>
+    <div class="box player-list" id="availablePlayers">Loading available players...</div>
     <div class="buttons">
       <button onclick="startTimer()">Start</button>
       <button onclick="pauseTimer()">Pause</button>
@@ -60,6 +62,7 @@
   <script>
     let timerInterval;
     const timerElement = document.getElementById('timer');
+    const availablePlayersElement = document.getElementById('availablePlayers');
 
     function fetchTimer() {
       fetch('https://sheets.googleapis.com/v4/spreadsheets/YOUR_SHEET_ID/values/Sheet1!A1?key=YOUR_API_KEY') // Update with your API key and Sheet ID
@@ -68,6 +71,25 @@
           timerElement.textContent = data.values[0][0];
         })
         .catch(error => console.error('Error fetching timer:', error));
+    }
+
+    function fetchPlayers() {
+      fetch('https://sheets.googleapis.com/v4/spreadsheets/YOUR_SHEET_ID/values/Draft board!B21:E46?key=YOUR_API_KEY') // Update with your API key and Sheet ID
+        .then(response => response.json())
+        .then(data => {
+          const players = data.values;
+          let playerListHtml = '<table style="width: 100%; color: white;">';
+          players.forEach(row => {
+            playerListHtml += '<tr>';
+            row.forEach(cell => {
+              playerListHtml += `<td style="padding: 5px; border: 1px solid white;">${cell}</td>`;
+            });
+            playerListHtml += '</tr>';
+          });
+          playerListHtml += '</table>';
+          availablePlayersElement.innerHTML = playerListHtml;
+        })
+        .catch(error => console.error('Error fetching players:', error));
     }
 
     function startTimer() {
@@ -85,6 +107,7 @@
     }
 
     setInterval(fetchTimer, 5000); // Update timer every 5 seconds
+    fetchPlayers(); // Fetch player list on page load
   </script>
 </body>
 </html>
