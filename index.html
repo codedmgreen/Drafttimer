@@ -8,57 +8,81 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      margin: 20px;
+      background: url('/mnt/data/A_realistic-looking_football_with_the_league_name_.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      height: 100vh;
+    }
+    .box {
+      border: 2px solid red;
+      padding: 20px;
+      margin: 10px;
+      width: 80%;
     }
     .timer {
+      font-size: 4em;
+    }
+    .next-pick, .current-pick, .player-list {
+      font-size: 2.5em;
+    }
+    .buttons {
+      margin: 20px;
+    }
+    .buttons button {
       font-size: 2em;
-      margin-top: 20px;
-    }
-    .next-pick {
-      font-size: 1.5em;
-      margin-top: 20px;
-    }
-    .draft-board {
-      margin-top: 40px;
-    }
-    .current-pick {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      font-size: 1.2em;
-      background: #f9f9f9;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      margin: 10px;
+      padding: 10px 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Draft Timer</h1>
-  <div class="next-pick">Next Pick: <span id="nextPick">Loading...</span></div>
-  <div class="timer" id="timer">150</div>
-  <div class="draft-board" id="draftBoard">Loading draft board...</div>
-  <div class="current-pick" id="currentPick">Loading current pick...</div>
+  <div class="container">
+    <div class="box next-pick">Next Pick: Round <span id="nextPickRound">#</span></div>
+    <div class="box timer" id="timer">150</div>
+    <div class="box current-pick" id="currentPick">Current Team Pick</div>
+    <div class="box player-list" id="availablePlayers">List players available</div>
+    <div class="buttons">
+      <button onclick="startTimer()">Start</button>
+      <button onclick="pauseTimer()">Pause</button>
+      <button onclick="endTimer()">End</button>
+    </div>
+    <div class="box previous-pick">Previous Player Picked: <span id="previousPick">None</span></div>
+  </div>
   <script>
-    const timerElement = document.getElementById('timer');
-    const nextPickElement = document.getElementById('nextPick');
-    const draftBoardElement = document.getElementById('draftBoard');
-    const currentPickElement = document.getElementById('currentPick');
     let timer = 150;
-    let previousPick = '';
+    let timerInterval;
+    const timerElement = document.getElementById('timer');
+    const nextPickRoundElement = document.getElementById('nextPickRound');
+    const currentPickElement = document.getElementById('currentPick');
+    const availablePlayersElement = document.getElementById('availablePlayers');
+    const previousPickElement = document.getElementById('previousPick');
 
     function updateTimer() {
       if (timer > 0) {
         timer--;
         timerElement.textContent = timer;
-      } else {
-        // Reset the timer when it reaches 0
-        timer = 150;
-        timerElement.textContent = timer;
       }
     }
 
-    setInterval(updateTimer, 1000);
+    function startTimer() {
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function endTimer() {
+      clearInterval(timerInterval);
+      timer = 150;
+      timerElement.textContent = timer;
+    }
 
     async function fetchDraftData() {
       try {
@@ -67,69 +91,35 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(text, 'text/html');
         const tables = doc.querySelectorAll('table');
-        
+
         if (tables.length > 0) {
           updateDraftBoard(tables[0]);
-          updateNextPick(tables[0]);
         } else {
           throw new Error('No tables found in the document');
         }
       } catch (error) {
         console.error('Error fetching draft data:', error);
-        draftBoardElement.textContent = 'Error loading draft board';
-        nextPickElement.textContent = 'Error loading next pick';
       }
     }
 
     function updateDraftBoard(table) {
-      // Process and display the draft board data
       const rows = table.querySelectorAll('tr');
-      let draftBoardHTML = '<table><tr><th>Round</th><th>Pick</th><th>Player</th></tr>';
+      let availablePlayersHTML = '<ul>';
       
       rows.forEach((row, index) => {
-        if (index > 21 && index <= 93) {
+        if (index >= 21 && index < 93) {
           const cells = row.querySelectorAll('td');
-          if (cells.length >= 3) {
-            draftBoardHTML += `<tr>
-                                  <td>${cells[0].textContent}</td>
-                                  <td>${cells[1].textContent}</td>
-                                  <td>${cells[2].textContent}</td>
-                                </tr>`;
+          if (cells.length >= 4) {
+            availablePlayersHTML += `<li>${cells[1].textContent} ${cells[2].textContent} - ${cells[3].textContent}</li>`;
           }
         }
       });
 
-      draftBoardHTML += '</table>';
-      draftBoardElement.innerHTML = draftBoardHTML;
+      availablePlayersHTML += '</ul>';
+      availablePlayersElement.innerHTML = availablePlayersHTML;
     }
 
-    function updateNextPick(table) {
-      // Calculate and display the next pick
-      const rows = table.querySelectorAll('tr');
-      let currentPick = '';
-
-      rows.forEach((row, index) => {
-        if (index === 1) {
-          const cells = row.querySelectorAll('td');
-          if (cells.length >= 1) {
-            currentPick = cells[0].textContent;
-          }
-        }
-      });
-
-      if (currentPick !== previousPick) {
-        previousPick = currentPick;
-        timer = 150; // Reset timer on new pick
-      }
-
-      nextPickElement.textContent = currentPick;
-      currentPickElement.textContent = `Current Pick: ${currentPick}`;
-    }
-
-    // Initial data fetch
     fetchDraftData();
-
-    // Periodically fetch new data
     setInterval(fetchDraftData, 5000);
   </script>
 </body>
