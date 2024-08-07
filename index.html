@@ -8,52 +8,62 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: url('path-to-your-image.png') no-repeat center center fixed; /* Update with correct image path */
-      background-size: cover;
+      background-color: #2c2f33;
       color: white;
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 100vh;
     }
     .container {
       display: flex;
-      flex-direction: row;
-      justify-content: space-around;
+      flex-direction: column;
       align-items: center;
-      width: 100%;
+      justify-content: space-around;
+      height: 100vh;
       padding: 10px;
     }
+    .row {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+    }
     .box {
-      background-color: rgba(0, 0, 0, 0.8);
+      background-color: #23272a;
       border: 2px solid #00ffcc;
       padding: 20px;
       margin: 10px;
       flex: 1;
       color: white;
       font-size: 1.5em;
+      text-align: center;
     }
     .timer {
       font-size: 4em;
+      flex: 0.5;
     }
-    .next-pick {
+    .next-pick, .current-pick {
       font-size: 2.5em;
+      flex: 1;
     }
     .player-list {
       display: flex;
-      flex-direction: row;
-      justify-content: space-around;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-height: 40%;
+      overflow-y: auto;
     }
     .player-column {
       margin: 10px;
+      flex: 1;
+    }
+    .player-column div {
+      margin: 5px 0;
     }
     .buttons {
       display: flex;
       justify-content: center;
       margin: 20px;
+      width: 100%;
     }
     .buttons button {
       background-color: #00ffcc;
@@ -63,6 +73,7 @@
       margin: 10px;
       padding: 10px 20px;
       cursor: pointer;
+      flex: 1;
     }
     .buttons button:hover {
       background-color: #009977;
@@ -71,17 +82,22 @@
 </head>
 <body>
   <div class="container">
-    <div class="box timer" id="timer">150</div>
-    <div class="box next-pick" id="nextPick">Next Pick: Round <span id="nextPickRound">#</span></div>
-    <div class="box current-pick" id="currentPick">Current Team Pick</div>
-  </div>
-  <div class="container player-list" id="availablePlayers">
-    <!-- Player columns will be populated here -->
-  </div>
-  <div class="buttons">
-    <button onclick="startTimer()">Start</button>
-    <button onclick="pauseTimer()">Pause</button>
-    <button onclick="endTimer()">End</button>
+    <div class="row">
+      <div class="box timer" id="timer">150</div>
+      <div class="box next-pick" id="nextPick">Next Pick: Round <span id="nextPickRound">1</span></div>
+      <div class="box current-pick" id="currentPick">Team A</div>
+    </div>
+    <div class="box player-list" id="availablePlayers">
+      <div class="player-column" id="QB"></div>
+      <div class="player-column" id="RB"></div>
+      <div class="player-column" id="WR"></div>
+      <div class="player-column" id="TE"></div>
+    </div>
+    <div class="buttons">
+      <button onclick="startTimer()">Start</button>
+      <button onclick="pauseTimer()">Pause</button>
+      <button onclick="endTimer()">End</button>
+    </div>
   </div>
   <script>
     let timerInterval;
@@ -138,27 +154,20 @@
       ["Drew Lock", "Blake Corum", "Elijah Moore", "Noah Fant"],
     ];
 
-    const availablePlayersElement = document.getElementById('availablePlayers');
-    const columns = ["QB", "RB", "WR", "TE"];
-    columns.forEach((col, colIndex) => {
-      const columnDiv = document.createElement('div');
-      columnDiv.classList.add('player-column');
-      const colHeader = document.createElement('div');
-      colHeader.textContent = col;
-      columnDiv.appendChild(colHeader);
-      players.forEach((row, rowIndex) => {
-        if (rowIndex > 0 && row[colIndex]) {
-          const playerDiv = document.createElement('div');
-          playerDiv.textContent = row[colIndex];
-          columnDiv.appendChild(playerDiv);
-        }
+    const positions = ["QB", "RB", "WR", "TE"];
+    positions.forEach((position, index) => {
+      const columnElement = document.getElementById(position);
+      const positionPlayers = players.map(row => row[index + 1]).filter(player => player);
+      positionPlayers.forEach(player => {
+        const playerDiv = document.createElement('div');
+        playerDiv.textContent = player;
+        columnElement.appendChild(playerDiv);
       });
-      availablePlayersElement.appendChild(columnDiv);
     });
 
     // Update information from the Google Sheet (simulated here)
     document.getElementById('nextPickRound').textContent = "1"; // Example round number
-    document.getElementById('currentPick').textContent = "Team A"; // Example current team
+    document.getElementById('currentPick').textContent = "Patrick"; // Example current team
   </script>
 </body>
 </html>
