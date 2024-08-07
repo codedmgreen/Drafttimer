@@ -53,24 +53,29 @@
     <div class="box current-pick" id="currentPick">Current Team Pick</div>
     <div class="box player-list" id="availablePlayers">Loading available players...</div>
     <div class="buttons">
-      <button onclick="google.script.run.startTimer()">Start</button>
-      <button onclick="google.script.run.pauseTimer()">Pause</button>
-      <button onclick="google.script.run.endTimer()">End</button>
+      <button onclick="startTimer()">Start</button>
+      <button onclick="pauseTimer()">Pause</button>
+      <button onclick="endTimer()">End</button>
     </div>
     <div class="box previous-pick">Previous Player Picked: <span id="previousPick">None</span></div>
   </div>
   <script>
+    let timerInterval;
+    const timerElement = document.getElementById('timer');
+    const SHEET_ID = '1InoUWEk9J72NC-nIpzE_mG7HrqCTWhVcWcncx6Y_7Go';
+    const API_KEY = 'YOUR_API_KEY'; // Replace with your Google Sheets API key
+
     function fetchTimer() {
-      fetch('https://sheets.googleapis.com/v4/spreadsheets/YOUR_SHEET_ID/values/Sheet1!A1?key=YOUR_API_KEY') // Update with your API key and Sheet ID
+      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Draft%20board!A1?key=${API_KEY}`)
         .then(response => response.json())
         .then(data => {
-          document.getElementById('timer').textContent = data.values[0][0];
+          timerElement.textContent = data.values[0][0];
         })
         .catch(error => console.error('Error fetching timer:', error));
     }
 
     function fetchPlayers() {
-      fetch('https://sheets.googleapis.com/v4/spreadsheets/YOUR_SHEET_ID/values/Draft board!B21:E46?key=YOUR_API_KEY') // Update with your API key and Sheet ID
+      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Draft%20board!B21:E46?key=${API_KEY}`)
         .then(response => response.json())
         .then(data => {
           const players = data.values;
@@ -86,6 +91,20 @@
           document.getElementById('availablePlayers').innerHTML = playerListHtml;
         })
         .catch(error => console.error('Error fetching players:', error));
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(fetchTimer, 1000);
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+    }
+
+    function endTimer() {
+      clearInterval(timerInterval);
+      timerElement.textContent = '150';
     }
 
     setInterval(fetchTimer, 5000); // Update timer every 5 seconds
